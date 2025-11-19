@@ -18,8 +18,6 @@ class AppTheme {
       onTertiary: Colors.white,
       error: AppColors.error,
       onError: Colors.white,
-      background: AppColors.surfaceMuted,
-      onBackground: AppColors.textPrimary,
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
       surfaceTint: AppColors.primaryBlue,

@@ -23,19 +23,30 @@ class ResultsScreen extends ConsumerStatefulWidget {
 
 class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   bool _showDetails = false;
-  bool _showFilters = false;
   FlightFilters _filters = const FlightFilters();
 
   void _toggleDetails() {
     setState(() => _showDetails = !_showDetails);
   }
 
-  void _toggleFilters() {
-    setState(() => _showFilters = !_showFilters);
-  }
-
-  void _onFiltersChanged(FlightFilters filters) {
-    setState(() => _filters = filters);
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => FilterPanel(
+          filters: _filters,
+          scrollController: scrollController,
+          onFiltersChanged: (filters) {
+            setState(() => _filters = filters);
+          },
+        ),
+      ),
+    );
   }
 
   String get _formattedDate =>
@@ -95,16 +106,14 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                   children: [
                     Expanded(
                       child: TextButton.icon(
-                        onPressed: _toggleFilters,
-                        icon: Icon(
-                          _showFilters
-                              ? Icons.filter_list_rounded
-                              : Icons.tune_rounded,
+                        onPressed: _showFilterBottomSheet,
+                        icon: const Icon(
+                          Icons.tune_rounded,
                           size: 18,
                           color: AppColors.primaryBlue,
                         ),
                         label: Text(
-                          _showFilters ? 'Hide Filters' : 'Show Filters',
+                          'Filters',
                           style: AppTypography.textTheme.labelMedium?.copyWith(
                             color: AppColors.primaryBlue,
                             fontWeight: FontWeight.w600,
@@ -127,17 +136,6 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                   ],
                 ),
               ),
-              // Filter panel
-              if (_showFilters)
-                Container(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6,
-                  ),
-                  child: FilterPanel(
-                    filters: _filters,
-                    onFiltersChanged: _onFiltersChanged,
-                  ),
-                ),
               Expanded(
                 child: FlightList(
                   filters: _filters,

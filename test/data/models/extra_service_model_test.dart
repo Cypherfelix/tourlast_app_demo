@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tourlast_app/data/models/extra_service/extra_services_response.dart';
 import 'package:tourlast_app/data/models/extra_service/extra_service.dart';
-import 'package:tourlast_app/data/models/common/money.dart';
 
 void main() {
   group('ExtraService Model Tests', () {

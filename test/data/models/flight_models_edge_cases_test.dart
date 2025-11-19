@@ -4,7 +4,6 @@ import 'package:tourlast_app/data/models/flight/passenger_fare.dart';
 import 'package:tourlast_app/data/models/flight/fare_breakdown.dart';
 import 'package:tourlast_app/data/models/flight/passenger_type_quantity.dart';
 import 'package:tourlast_app/data/models/flight/penalty_details.dart';
-import 'package:tourlast_app/data/models/common/money.dart';
 
 void main() {
   group('Flight Models Edge Cases', () {

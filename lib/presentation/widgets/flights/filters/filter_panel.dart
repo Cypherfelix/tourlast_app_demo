@@ -17,10 +17,12 @@ class FilterPanel extends StatefulWidget {
     super.key,
     required this.filters,
     required this.onFiltersChanged,
+    this.scrollController,
   });
 
   final FlightFilters filters;
   final ValueChanged<FlightFilters> onFiltersChanged;
+  final ScrollController? scrollController;
 
   @override
   State<FilterPanel> createState() => _FilterPanelState();
@@ -71,31 +73,32 @@ class _FilterPanelState extends State<FilterPanel> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-            spreadRadius: 0,
-          ),
-        ],
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
+          // Drag handle
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
+            margin: const EdgeInsets.only(
+              top: AppSpacing.md,
+              bottom: AppSpacing.lg,
             ),
+            width: 40,
+            height: 4,
             decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: AppColors.border, width: 1),
-              ),
+              color: AppColors.border,
+              borderRadius: BorderRadius.circular(2),
             ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: Row(
               children: [
                 Icon(
@@ -106,7 +109,7 @@ class _FilterPanelState extends State<FilterPanel> {
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   'Filters',
-                  style: AppTypography.textTheme.titleMedium?.copyWith(
+                  style: AppTypography.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
@@ -149,13 +152,22 @@ class _FilterPanelState extends State<FilterPanel> {
                       ),
                     ),
                   ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  color: AppColors.textSecondary,
+                  onPressed: () => Navigator.pop(context),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ],
             ),
           ),
+          const SizedBox(height: AppSpacing.lg),
           // Filter sections
           Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              controller: widget.scrollController,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -219,6 +231,7 @@ class _FilterPanelState extends State<FilterPanel> {
                       );
                     },
                   ),
+                  const SizedBox(height: AppSpacing.xl),
                 ],
               ),
             ),

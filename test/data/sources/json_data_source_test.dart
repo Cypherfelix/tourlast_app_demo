@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tourlast_app/data/sources/local/json_data_source.dart';
-import 'package:tourlast_app/core/errors/data_exception.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
