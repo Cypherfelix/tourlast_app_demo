@@ -48,10 +48,9 @@ class FlightList extends ConsumerWidget {
       loading: () => const _LoadingState(),
       error: (error, stackTrace) => _ErrorState(
         error: error,
-        onRetry: () => {
-          print(stackTrace),
-          ref.invalidate(flightsProvider),
-          ref.read(flightsProvider.future),
+        onRetry: () async {
+          ref.invalidate(flightsProvider);
+          await ref.read(flightsProvider.future);
         },
       ),
     );

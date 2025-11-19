@@ -24,9 +24,8 @@ class FlightCardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Airline logo placeholder (will be replaced with actual logo in Story 5.2)
         const AirlineLogoPlaceholder(),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,21 +33,16 @@ class FlightCardHeader extends StatelessWidget {
               Text(
                 airlineName,
                 style: AppTypography.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
+                  letterSpacing: -0.2,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: AppSpacing.xxs),
               Row(
                 children: [
-                  Text(
-                    '$airlineCode $flightNumber',
-                    style: AppTypography.textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm,
@@ -56,22 +50,52 @@ class FlightCardHeader extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceMuted,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      cabinClass,
+                      '$airlineCode $flightNumber',
                       style: AppTypography.textTheme.labelSmall?.copyWith(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
+                        letterSpacing: 0.4,
                       ),
                     ),
                   ),
+                  const SizedBox(width: AppSpacing.sm),
+                  _CabinChip(label: cabinClass),
                 ],
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _CabinChip extends StatelessWidget {
+  const _CabinChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: AppTypography.textTheme.labelSmall?.copyWith(
+          color: AppColors.primaryBlue,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }

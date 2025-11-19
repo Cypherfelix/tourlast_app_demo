@@ -9,17 +9,17 @@ class AirlineLogoPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 56,
-      height: 56,
+      width: 52,
+      height: 52,
       decoration: BoxDecoration(
         color: AppColors.surfaceMuted,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, width: 1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
       ),
       child: Icon(
         Icons.airlines_rounded,
-        size: 28,
-        color: AppColors.primaryBlue.withValues(alpha: 0.6),
+        size: 26,
+        color: AppColors.primaryBlue,
       ),
     );
   }

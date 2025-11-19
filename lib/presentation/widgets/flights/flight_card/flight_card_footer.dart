@@ -16,8 +16,7 @@ class FlightCardFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Baggage info
-        if (baggage != null) ...[
+        if (baggage != null)
           Row(
             children: [
               Icon(
@@ -35,29 +34,51 @@ class FlightCardFooter extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(width: AppSpacing.md),
-        ],
         const Spacer(),
-        // Price
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              totalFare.currencyCode,
-              style: AppTypography.textTheme.labelSmall?.copyWith(
-                color: AppColors.textTertiary,
-                fontWeight: FontWeight.w500,
-              ),
+
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xxs,
+          ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppColors.primaryBlue, AppColors.primaryBlueDark],
             ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              totalFare.amount,
-              style: AppTypography.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryBlue,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+                spreadRadius: 0,
               ),
-            ),
-          ],
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                totalFare.currencyCode,
+                style: AppTypography.textTheme.bodySmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                totalFare.amount,
+                style: AppTypography.textTheme.headlineLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: -1,
+                  height: 1,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

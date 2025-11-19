@@ -44,29 +44,34 @@ class FlightCard extends StatelessWidget {
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 350),
       curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Transform.translate(
-          offset: Offset(0, 20 * (1 - value)),
-          child: Opacity(opacity: value, child: child),
-        );
-      },
+      builder: (context, value, child) => Transform.translate(
+        offset: Offset(0, 12 * (1 - value)),
+        child: Opacity(opacity: value, child: child),
+      ),
       child: Card(
         margin: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl,
-          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xs,
         ),
         elevation: 0,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: AppColors.border, width: 1),
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(
+            color: AppColors.border.withValues(alpha: 0.8),
+            width: 1,
+          ),
         ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -76,7 +81,6 @@ class FlightCard extends StatelessWidget {
                   flightNumber: firstSegment.flightNumber,
                   cabinClass: firstSegment.cabinClassText,
                 ),
-                const SizedBox(height: AppSpacing.lg),
                 FlightCardRoute(
                   origin: firstSegment.departureAirportLocationCode,
                   destination: firstSegment.arrivalAirportLocationCode,
@@ -91,7 +95,6 @@ class FlightCard extends StatelessWidget {
                           ?.totalStops ??
                       0,
                 ),
-                const SizedBox(height: AppSpacing.lg),
                 FlightCardFooter(
                   totalFare: fareItinerary
                       .airItineraryFareInfo

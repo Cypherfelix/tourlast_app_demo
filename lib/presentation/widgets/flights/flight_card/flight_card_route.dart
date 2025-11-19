@@ -26,115 +26,142 @@ class FlightCardRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Departure
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final durationText = DateTimeFormatter.formatDuration(duration);
+    final stopsText = stops == 0
+        ? 'Direct'
+        : stops == 1
+        ? '1 stop'
+        : '$stops stops';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Row(
+        children: [
+          Expanded(
+            child: _TimeColumn(
+              alignment: CrossAxisAlignment.start,
+              time: DateTimeFormatter.formatTime(departureTime),
+              airport: origin,
+              icon: Icons.flight_takeoff_rounded,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Column(
             children: [
+              _RouteLine(),
+              const SizedBox(height: AppSpacing.xs),
               Text(
-                DateTimeFormatter.formatTime(departureTime),
-                style: AppTypography.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+                durationText,
+                style: AppTypography.textTheme.labelMedium?.copyWith(
                   color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xxs),
+              const SizedBox(height: 2),
               Text(
-                origin,
-                style: AppTypography.textTheme.titleMedium?.copyWith(
+                stopsText,
+                style: AppTypography.textTheme.labelSmall?.copyWith(
+                  color: stops == 0 ? AppColors.success : AppColors.warning,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
                 ),
               ),
             ],
           ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: _TimeColumn(
+              alignment: CrossAxisAlignment.end,
+              time: DateTimeFormatter.formatTime(arrivalTime),
+              airport: destination,
+              icon: Icons.flight_land_rounded,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimeColumn extends StatelessWidget {
+  const _TimeColumn({
+    required this.alignment,
+    required this.time,
+    required this.airport,
+    required this.icon,
+  });
+
+  final CrossAxisAlignment alignment;
+  final String time;
+  final String airport;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: alignment,
+      children: [
+        Text(
+          time,
+          style: AppTypography.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.4,
+          ),
         ),
-        // Route divider with duration
-        Column(
+        const SizedBox(height: AppSpacing.xxs),
+        Row(
+          mainAxisAlignment: alignment == CrossAxisAlignment.end
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(width: 40, height: 1, color: AppColors.border),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                  ),
-                  child: Icon(
-                    Icons.flight_takeoff_rounded,
-                    size: 16,
-                    color: AppColors.primaryBlue,
-                  ),
-                ),
-                Container(width: 40, height: 1, color: AppColors.border),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.access_time_rounded,
-                  size: 14,
-                  color: AppColors.textTertiary,
-                ),
-                const SizedBox(width: AppSpacing.xxs),
-                Text(
-                  DateTimeFormatter.formatDuration(duration),
-                  style: AppTypography.textTheme.labelMedium?.copyWith(
-                    color: AppColors.textTertiary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            if (stops > 0) ...[
-              const SizedBox(height: AppSpacing.xxs),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  stops == 1 ? '1 stop' : '$stops stops',
-                  style: AppTypography.textTheme.labelSmall?.copyWith(
-                    color: AppColors.warning,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+            if (alignment == CrossAxisAlignment.start)
+              Icon(icon, size: 16, color: AppColors.primaryBlue),
+            if (alignment == CrossAxisAlignment.start)
+              const SizedBox(width: AppSpacing.xxs),
+            Text(
+              airport,
+              style: AppTypography.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+                letterSpacing: 0.4,
               ),
-            ],
+            ),
+            if (alignment == CrossAxisAlignment.end)
+              const SizedBox(width: AppSpacing.xxs),
+            if (alignment == CrossAxisAlignment.end)
+              Icon(icon, size: 16, color: AppColors.accentAqua),
           ],
         ),
-        // Arrival
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                DateTimeFormatter.formatTime(arrivalTime),
-                style: AppTypography.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                destination,
-                style: AppTypography.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
       ],
+    );
+  }
+}
+
+class _RouteLine extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _Dot(color: AppColors.primaryBlue),
+        Container(width: 56, height: 2, color: AppColors.border),
+        _Dot(color: AppColors.accentAqua),
+      ],
+    );
+  }
+}
+
+class _Dot extends StatelessWidget {
+  const _Dot({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }
