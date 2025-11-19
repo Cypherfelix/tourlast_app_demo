@@ -8,9 +8,9 @@ part of 'tax.dart';
 
 Tax _$TaxFromJson(Map<String, dynamic> json) => Tax(
       taxCode: json['TaxCode'] as String?,
-      amount: json['Amount'] as String,
-      currencyCode: json['CurrencyCode'] as String,
-      decimalPlaces: json['DecimalPlaces'] as String,
+      amount: Tax._stringFromJson(json['Amount']),
+      currencyCode: Tax._stringFromJson(json['CurrencyCode']),
+      decimalPlaces: Tax._stringFromJsonNullable(json['DecimalPlaces']),
     );
 
 Map<String, dynamic> _$TaxToJson(Tax instance) => <String, dynamic>{
