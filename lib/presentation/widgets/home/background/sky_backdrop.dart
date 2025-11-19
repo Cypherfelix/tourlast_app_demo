@@ -21,7 +21,7 @@ class SkyBackdrop extends StatelessWidget {
           Positioned(
             top: -60,
             right: -30,
-            child: CircleBlur(size: 200, color: Colors.white.withValues(alpha: 0.3)),
+            child: CircleBlur(size: 200, color: AppColors.accentAqua.withValues(alpha: 0.15)),
           ),
           Positioned(
             top: 120,
