@@ -15,6 +15,9 @@ import '../../widgets/home/bottom_sheets/airport_selector_sheet.dart';
 import '../../widgets/home/bottom_sheets/cabin_selector_sheet.dart';
 import '../../widgets/home/bottom_sheets/currency_selector_sheet.dart';
 import '../../widgets/home/bottom_sheets/travelers_selector_sheet.dart';
+import '../../widgets/home/models/search_params.dart';
+import '../../widgets/home/search_card/search_loading_overlay.dart';
+import '../results/results_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _infants = SampleTrip.infants;
   String _cabinClass = SampleTrip.cabinClass;
   String _currency = SampleTrip.currency;
+  bool _isSearching = false;
 
   // Available options for demo
   static const List<Map<String, String>> _airports = [
@@ -56,54 +60,55 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Stack(
           children: [
             const SkyBackdrop(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TopBar(onHelpTap: _showHelpDialog),
-                const SizedBox(height: AppSpacing.xl),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-                  child: HeroText(),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xl,
+            if (_isSearching) const SearchLoadingOverlay(),
+            if (!_isSearching)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TopBar(onHelpTap: _showHelpDialog),
+                  const SizedBox(height: AppSpacing.xl),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                    child: HeroText(),
                   ),
-                  child: TripTypeSelector(
-                    selectedType: _tripType,
-                    onTypeChanged: (type) => setState(() => _tripType = type),
+                  const SizedBox(height: AppSpacing.lg),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xl,
+                    ),
+                    child: TripTypeSelector(
+                      selectedType: _tripType,
+                      onTypeChanged: (type) => setState(() => _tripType = type),
+                    ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                SearchCard(
-                  tripType: _tripType,
-                  origin: _origin,
-                  destination: _destination,
-                  selectedDate: _selectedDate,
-                  returnDate: _returnDate,
-                  adults: _adults,
-                  children: _children,
-                  infants: _infants,
-                  cabinClass: _cabinClass,
-                  currency: _currency,
-                  onOriginTap: () => _showAirportSelector(true),
-                  onDestinationTap: () => _showAirportSelector(false),
-                  onDateTap: _selectDate,
-                  onReturnDateTap: _selectReturnDate,
-                  onTravelersTap: _selectTravelers,
-                  onCabinTap: _selectCabin,
-                  onCurrencyTap: _selectCurrency,
-                ),
-                const Spacer(),
-                SearchButton(
-                  textTheme: Theme.of(context).textTheme,
-                  onPressed: () {
-                    // Will be implemented in Story 3.2
-                  },
-                ),
-              ],
-            ),
+                  const SizedBox(height: AppSpacing.lg),
+                  SearchCard(
+                    tripType: _tripType,
+                    origin: _origin,
+                    destination: _destination,
+                    selectedDate: _selectedDate,
+                    returnDate: _returnDate,
+                    adults: _adults,
+                    children: _children,
+                    infants: _infants,
+                    cabinClass: _cabinClass,
+                    currency: _currency,
+                    onOriginTap: () => _showAirportSelector(true),
+                    onDestinationTap: () => _showAirportSelector(false),
+                    onDateTap: _selectDate,
+                    onReturnDateTap: _selectReturnDate,
+                    onTravelersTap: _selectTravelers,
+                    onCabinTap: _selectCabin,
+                    onCurrencyTap: _selectCurrency,
+                  ),
+                  const Spacer(),
+                  SearchButton(
+                    textTheme: Theme.of(context).textTheme,
+                    isLoading: _isSearching,
+                    onPressed: _handleSearch,
+                  ),
+                ],
+              ),
           ],
         ),
       ),
@@ -242,5 +247,57 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showHelpDialog() {
     showDialog(context: context, builder: (context) => const HelpDialog());
+  }
+
+  Future<void> _handleSearch() async {
+    if (_isSearching) return;
+
+    setState(() => _isSearching = true);
+
+    // Simulate API call delay
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (!mounted) return;
+
+    final searchParams = SearchParams(
+      tripType: _tripType,
+      origin: _origin,
+      destination: _destination,
+      departureDate: _selectedDate,
+      returnDate: _returnDate,
+      adults: _adults,
+      children: _children,
+      infants: _infants,
+      cabinClass: _cabinClass,
+      currency: _currency,
+    );
+
+    setState(() => _isSearching = false);
+
+    // Navigate with custom transition
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ResultsScreen(searchParams: searchParams),
+        transitionDuration: const Duration(milliseconds: 600),
+        reverseTransitionDuration: const Duration(milliseconds: 400),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 0.3);
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic;
+
+          final tween = Tween(begin: begin, end: end);
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: curve,
+          );
+
+          return SlideTransition(
+            position: tween.animate(curvedAnimation),
+            child: FadeTransition(opacity: animation, child: child),
+          );
+        },
+      ),
+    );
   }
 }
