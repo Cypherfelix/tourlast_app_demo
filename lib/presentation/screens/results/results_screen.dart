@@ -11,6 +11,7 @@ import '../../widgets/flights/filters/filter_panel.dart';
 import '../../widgets/flights/flight_list/flight_list.dart';
 import '../../widgets/flights/hero_section/search_hero_section.dart';
 import '../../widgets/home/models/search_params.dart';
+import '../details/flight_details_screen.dart';
 
 class ResultsScreen extends ConsumerStatefulWidget {
   const ResultsScreen({super.key, required this.searchParams});
@@ -195,12 +196,33 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                 child: FlightList(
                   filters: _filters,
                   onFlightTap: (fareItinerary) {
-                    // TODO: Navigate to flight details in Story 6.1
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Flight ${fareItinerary.airItinerary.originDestinationOptions.firstOrNull?.originDestinationOption.firstOrNull?.flightSegment.flightNumber ?? 'N/A'} selected',
-                        ),
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            FlightDetailsScreen(fareItinerary: fareItinerary),
+                        transitionDuration: const Duration(milliseconds: 400),
+                        reverseTransitionDuration:
+                            const Duration(milliseconds: 300),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          const begin = Offset(1.0, 0.0);
+                          const end = Offset.zero;
+                          const curve = Curves.easeOutCubic;
+
+                          final tween = Tween(begin: begin, end: end);
+                          final curvedAnimation = CurvedAnimation(
+                            parent: animation,
+                            curve: curve,
+                          );
+
+                          return SlideTransition(
+                            position: tween.animate(curvedAnimation),
+                            child: FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
