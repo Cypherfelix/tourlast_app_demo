@@ -37,6 +37,8 @@ class FlightRepository {
     } on DataException {
       rethrow;
     } catch (e, stackTrace) {
+      print('Error: $e');
+      print('Stack trace: $stackTrace');
       throw DataParsingException(
         'Failed to parse flight response: $e',
         stackTrace,

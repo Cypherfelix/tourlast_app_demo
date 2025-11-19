@@ -9,22 +9,24 @@ part of 'trip_details_response.dart';
 TripDetailsResponse _$TripDetailsResponseFromJson(Map<String, dynamic> json) =>
     TripDetailsResponse(
       tripDetailsResponse: TripDetailsResponseData.fromJson(
-        json['TripDetailsResponse'] as Map<String, dynamic>,
-      ),
+          json['TripDetailsResponse'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$TripDetailsResponseToJson(
-  TripDetailsResponse instance,
-) => <String, dynamic>{'TripDetailsResponse': instance.tripDetailsResponse};
+        TripDetailsResponse instance) =>
+    <String, dynamic>{
+      'TripDetailsResponse': instance.tripDetailsResponse,
+    };
 
 TripDetailsResponseData _$TripDetailsResponseDataFromJson(
-  Map<String, dynamic> json,
-) => TripDetailsResponseData(
-  tripDetailsResult: TripDetailsResult.fromJson(
-    json['TripDetailsResult'] as Map<String, dynamic>,
-  ),
-);
+        Map<String, dynamic> json) =>
+    TripDetailsResponseData(
+      tripDetailsResult: TripDetailsResult.fromJson(
+          json['TripDetailsResult'] as Map<String, dynamic>),
+    );
 
 Map<String, dynamic> _$TripDetailsResponseDataToJson(
-  TripDetailsResponseData instance,
-) => <String, dynamic>{'TripDetailsResult': instance.tripDetailsResult};
+        TripDetailsResponseData instance) =>
+    <String, dynamic>{
+      'TripDetailsResult': instance.tripDetailsResult,
+    };

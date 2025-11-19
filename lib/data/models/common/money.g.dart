@@ -7,13 +7,13 @@ part of 'money.dart';
 // **************************************************************************
 
 Money _$MoneyFromJson(Map<String, dynamic> json) => Money(
-  amount: json['amount'] as String,
-  currencyCode: json['currencyCode'] as String,
-  decimalPlaces: json['decimalPlaces'] as String,
-);
+      amount: Money._stringFromJson(json['Amount']),
+      currencyCode: Money._stringFromJson(json['CurrencyCode']),
+      decimalPlaces: Money._stringFromJsonNullable(json['DecimalPlaces']),
+    );
 
 Map<String, dynamic> _$MoneyToJson(Money instance) => <String, dynamic>{
-  'amount': instance.amount,
-  'currencyCode': instance.currencyCode,
-  'decimalPlaces': instance.decimalPlaces,
-};
+      'Amount': instance.amount,
+      'CurrencyCode': instance.currencyCode,
+      'DecimalPlaces': instance.decimalPlaces,
+    };

@@ -23,8 +23,7 @@ FlightSegment _$FlightSegmentFromJson(Map<String, dynamic> json) =>
       marriageGroup: json['MarriageGroup'] as String?,
       mealCode: json['MealCode'] as String?,
       operatingAirline: OperatingAirline.fromJson(
-        json['OperatingAirline'] as Map<String, dynamic>,
-      ),
+          json['OperatingAirline'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$FlightSegmentToJson(FlightSegment instance) =>

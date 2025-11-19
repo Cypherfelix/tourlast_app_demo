@@ -7,16 +7,16 @@ part of 'trip_service.dart';
 // **************************************************************************
 
 TripService _$TripServiceFromJson(Map<String, dynamic> json) => TripService(
-  behavior: json['Behavior'] as String,
-  checkInType: json['CheckInType'] as String,
-  description: json['Description'] as String,
-  flightDesignator: json['FlightDesignator'] as String?,
-  isMandatory: json['IsMandatory'] as bool,
-  relation: json['Relation'] as String?,
-  serviceCost: Money.fromJson(json['ServiceCost'] as Map<String, dynamic>),
-  serviceId: json['ServiceId'] as String,
-  type: json['Type'] as String,
-);
+      behavior: json['Behavior'] as String,
+      checkInType: json['CheckInType'] as String,
+      description: json['Description'] as String,
+      flightDesignator: json['FlightDesignator'] as String?,
+      isMandatory: json['IsMandatory'] as bool,
+      relation: json['Relation'] as String?,
+      serviceCost: Money.fromJson(json['ServiceCost'] as Map<String, dynamic>),
+      serviceId: json['ServiceId'] as String,
+      type: json['Type'] as String,
+    );
 
 Map<String, dynamic> _$TripServiceToJson(TripService instance) =>
     <String, dynamic>{

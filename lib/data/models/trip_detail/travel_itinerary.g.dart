@@ -14,9 +14,8 @@ TravelItinerary _$TravelItineraryFromJson(Map<String, dynamic> json) =>
       fareType: json['FareType'] as String,
       isCommissionable: json['IsCommissionable'] as bool,
       isMOFare: json['IsMOFare'] as bool,
-      itineraryInfo: ItineraryInfo.fromJson(
-        json['ItineraryInfo'] as Map<String, dynamic>,
-      ),
+      itineraryInfo:
+          ItineraryInfo.fromJson(json['ItineraryInfo'] as Map<String, dynamic>),
       uniqueID: json['UniqueID'] as String,
       origin: json['Origin'] as String,
       ticketStatus: json['TicketStatus'] as String,

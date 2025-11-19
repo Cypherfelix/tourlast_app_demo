@@ -9,21 +9,17 @@ part of 'fare_breakdown.dart';
 FareBreakdown _$FareBreakdownFromJson(Map<String, dynamic> json) =>
     FareBreakdown(
       fareBasisCode: json['FareBasisCode'] as String?,
-      baggage: (json['Baggage'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
+      baggage:
+          (json['Baggage'] as List<dynamic>).map((e) => e as String).toList(),
       cabinBaggage: (json['CabinBaggage'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
-      passengerFare: PassengerFare.fromJson(
-        json['PassengerFare'] as Map<String, dynamic>,
-      ),
+      passengerFare:
+          PassengerFare.fromJson(json['PassengerFare'] as Map<String, dynamic>),
       passengerTypeQuantity: PassengerTypeQuantity.fromJson(
-        json['PassengerTypeQuantity'] as Map<String, dynamic>,
-      ),
+          json['PassengerTypeQuantity'] as Map<String, dynamic>),
       penaltyDetails: PenaltyDetails.fromJson(
-        json['PenaltyDetails'] as Map<String, dynamic>,
-      ),
+          json['PenaltyDetails'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$FareBreakdownToJson(FareBreakdown instance) =>

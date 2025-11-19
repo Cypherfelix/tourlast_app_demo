@@ -14,16 +14,19 @@ AirSearchResult _$AirSearchResultFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$AirSearchResultToJson(AirSearchResult instance) =>
-    <String, dynamic>{'FareItineraries': instance.fareItineraries};
+    <String, dynamic>{
+      'FareItineraries': instance.fareItineraries,
+    };
 
 FareItineraryWrapper _$FareItineraryWrapperFromJson(
-  Map<String, dynamic> json,
-) => FareItineraryWrapper(
-  fareItinerary: FareItinerary.fromJson(
-    json['FareItinerary'] as Map<String, dynamic>,
-  ),
-);
+        Map<String, dynamic> json) =>
+    FareItineraryWrapper(
+      fareItinerary:
+          FareItinerary.fromJson(json['FareItinerary'] as Map<String, dynamic>),
+    );
 
 Map<String, dynamic> _$FareItineraryWrapperToJson(
-  FareItineraryWrapper instance,
-) => <String, dynamic>{'FareItinerary': instance.fareItinerary};
+        FareItineraryWrapper instance) =>
+    <String, dynamic>{
+      'FareItinerary': instance.fareItinerary,
+    };

@@ -10,13 +10,12 @@ ExtraServicesResult _$ExtraServicesResultFromJson(Map<String, dynamic> json) =>
     ExtraServicesResult(
       success: json['success'] as bool,
       extraServicesData: ExtraServicesData.fromJson(
-        json['ExtraServicesData'] as Map<String, dynamic>,
-      ),
+          json['ExtraServicesData'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ExtraServicesResultToJson(
-  ExtraServicesResult instance,
-) => <String, dynamic>{
-  'success': instance.success,
-  'ExtraServicesData': instance.extraServicesData,
-};
+        ExtraServicesResult instance) =>
+    <String, dynamic>{
+      'success': instance.success,
+      'ExtraServicesData': instance.extraServicesData,
+    };

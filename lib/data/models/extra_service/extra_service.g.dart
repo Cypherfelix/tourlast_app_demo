@@ -7,15 +7,15 @@ part of 'extra_service.dart';
 // **************************************************************************
 
 ExtraService _$ExtraServiceFromJson(Map<String, dynamic> json) => ExtraService(
-  serviceId: json['ServiceId'] as String,
-  checkInType: json['CheckInType'] as String,
-  description: json['Description'] as String,
-  fareDescription: json['FareDescription'] as String,
-  isMandatory: json['IsMandatory'] as bool,
-  minimumQuantity: (json['MinimumQuantity'] as num).toInt(),
-  maximumQuantity: (json['MaximumQuantity'] as num).toInt(),
-  serviceCost: Money.fromJson(json['ServiceCost'] as Map<String, dynamic>),
-);
+      serviceId: json['ServiceId'] as String,
+      checkInType: json['CheckInType'] as String,
+      description: json['Description'] as String,
+      fareDescription: json['FareDescription'] as String,
+      isMandatory: json['IsMandatory'] as bool,
+      minimumQuantity: (json['MinimumQuantity'] as num).toInt(),
+      maximumQuantity: (json['MaximumQuantity'] as num).toInt(),
+      serviceCost: Money.fromJson(json['ServiceCost'] as Map<String, dynamic>),
+    );
 
 Map<String, dynamic> _$ExtraServiceToJson(ExtraService instance) =>
     <String, dynamic>{

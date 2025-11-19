@@ -11,11 +11,9 @@ DynamicBaggage _$DynamicBaggageFromJson(Map<String, dynamic> json) =>
       behavior: json['Behavior'] as String,
       isMultiSelect: json['IsMultiSelect'] as bool,
       services: (json['Services'] as List<dynamic>)
-          .map(
-            (e) => (e as List<dynamic>)
-                .map((e) => ExtraService.fromJson(e as Map<String, dynamic>))
-                .toList(),
-          )
+          .map((e) => (e as List<dynamic>)
+              .map((e) => ExtraService.fromJson(e as Map<String, dynamic>))
+              .toList())
           .toList(),
     );
 

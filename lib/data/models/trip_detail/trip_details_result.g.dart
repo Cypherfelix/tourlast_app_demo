@@ -11,8 +11,7 @@ TripDetailsResult _$TripDetailsResultFromJson(Map<String, dynamic> json) =>
       success: json['Success'] as String,
       target: json['Target'] as String,
       travelItinerary: TravelItinerary.fromJson(
-        json['TravelItinerary'] as Map<String, dynamic>,
-      ),
+          json['TravelItinerary'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$TripDetailsResultToJson(TripDetailsResult instance) =>
