@@ -23,12 +23,13 @@ class FlightList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final flightsAsync = ref.watch(flightListProvider);
+    final filters = this.filters ?? FlightFilters.empty();
+    final flightsAsync = ref.watch(filteredFlightListProvider(filters));
 
     return flightsAsync.when(
       data: (flights) {
         if (flights.isEmpty) {
-          return const _EmptyState();
+          return _EmptyState(hasFilters: filters != FlightFilters.empty());
         }
 
         return RefreshIndicator(
@@ -81,7 +82,9 @@ class _LoadingState extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.hasFilters});
+
+  final bool hasFilters;
 
   @override
   Widget build(BuildContext context) {
@@ -90,18 +93,31 @@ class _EmptyState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.flight_takeoff_rounded,
+            hasFilters
+                ? Icons.filter_alt_off_rounded
+                : Icons.flight_takeoff_rounded,
             size: 64,
             color: AppColors.textTertiary,
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'No flights found',
+            hasFilters
+                ? 'No flights match your filters'
+                : 'No flights found',
             style: AppTypography.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
             ),
           ),
+          if (hasFilters) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Try adjusting your filter criteria',
+              style: AppTypography.textTheme.bodyMedium?.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ],
         ],
       ),
     );

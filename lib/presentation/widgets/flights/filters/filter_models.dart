@@ -35,12 +35,18 @@ class FlightFilters {
   }) {
     return FlightFilters(
       selectedAirlines: selectedAirlines ?? this.selectedAirlines,
-      minPrice: minPriceNull == _sentinel ? null : (minPrice ?? this.minPrice),
-      maxPrice: maxPriceNull == _sentinel ? null : (maxPrice ?? this.maxPrice),
+      minPrice: minPriceNull != _sentinel
+          ? null
+          : (minPrice ?? this.minPrice),
+      maxPrice: maxPriceNull != _sentinel
+          ? null
+          : (maxPrice ?? this.maxPrice),
       departureTimeRanges: departureTimeRanges ?? this.departureTimeRanges,
       selectedCabins: selectedCabins ?? this.selectedCabins,
-      maxStops: maxStopsNull == _sentinel ? null : (maxStops ?? this.maxStops),
-      hasBaggage: hasBaggageNull == _sentinel
+      maxStops: maxStopsNull != _sentinel
+          ? null
+          : (maxStops ?? this.maxStops),
+      hasBaggage: hasBaggageNull != _sentinel
           ? null
           : (hasBaggage ?? this.hasBaggage),
     );
@@ -72,9 +78,27 @@ class FlightFilters {
       hasBaggage,
     );
   }
+
+  /// Get the count of active filters.
+  int get activeFilterCount {
+    int count = 0;
+    if (selectedAirlines.isNotEmpty) count++;
+    if (minPrice != null || maxPrice != null) count++;
+    if (departureTimeRanges.isNotEmpty) count++;
+    if (selectedCabins.isNotEmpty) count++;
+    if (maxStops != null) count++;
+    if (hasBaggage != null) count++;
+    return count;
+  }
+
+  /// Check if any filters are active.
+  bool get hasActiveFilters => activeFilterCount > 0;
 }
 
 const _sentinel = Object();
+
+/// Sentinel object for copyWith null handling (exported for use in filter_panel).
+const sentinel = _sentinel;
 
 /// Departure time range options.
 enum DepartureTimeRange {

@@ -105,34 +105,89 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextButton.icon(
-                        onPressed: _showFilterBottomSheet,
-                        icon: const Icon(
-                          Icons.tune_rounded,
-                          size: 18,
-                          color: AppColors.primaryBlue,
-                        ),
-                        label: Text(
-                          'Filters',
-                          style: AppTypography.textTheme.labelMedium?.copyWith(
-                            color: AppColors.primaryBlue,
-                            fontWeight: FontWeight.w600,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          TextButton.icon(
+                            onPressed: _showFilterBottomSheet,
+                            icon: const Icon(
+                              Icons.tune_rounded,
+                              size: 18,
+                              color: AppColors.primaryBlue,
+                            ),
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Filters',
+                                  style: AppTypography.textTheme.labelMedium
+                                      ?.copyWith(
+                                    color: AppColors.primaryBlue,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (_filters.hasActiveFilters) ...[
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.sm,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryBlue,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '${_filters.activeFilterCount}',
+                                      style: AppTypography.textTheme.labelSmall
+                                          ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.sm,
+                              ),
+                              backgroundColor: AppColors.primaryBlue.withValues(
+                                alpha: 0.08,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
+                      ),
+                    ),
+                    if (_filters.hasActiveFilters) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _filters = FlightFilters.empty();
+                          });
+                        },
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.md,
                             vertical: AppSpacing.sm,
                           ),
-                          backgroundColor: AppColors.primaryBlue.withValues(
-                            alpha: 0.08,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'Clear',
+                          style: AppTypography.textTheme.labelMedium?.copyWith(
+                            color: AppColors.primaryBlue,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

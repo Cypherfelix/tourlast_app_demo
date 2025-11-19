@@ -23,6 +23,8 @@ class PriceFilterSection extends StatefulWidget {
 
 class _PriceFilterSectionState extends State<PriceFilterSection> {
   late RangeValues _rangeValues;
+  late TextEditingController _minController;
+  late TextEditingController _maxController;
   static const double _minPrice = 0;
   static const double _maxPrice = 10000;
 
@@ -32,6 +34,12 @@ class _PriceFilterSectionState extends State<PriceFilterSection> {
     _rangeValues = RangeValues(
       widget.minPrice ?? _minPrice,
       widget.maxPrice ?? _maxPrice,
+    );
+    _minController = TextEditingController(
+      text: widget.minPrice?.toStringAsFixed(0) ?? '',
+    );
+    _maxController = TextEditingController(
+      text: widget.maxPrice?.toStringAsFixed(0) ?? '',
     );
   }
 
@@ -44,17 +52,53 @@ class _PriceFilterSectionState extends State<PriceFilterSection> {
         widget.minPrice ?? _minPrice,
         widget.maxPrice ?? _maxPrice,
       );
+      _minController.text = widget.minPrice?.toStringAsFixed(0) ?? '';
+      _maxController.text = widget.maxPrice?.toStringAsFixed(0) ?? '';
     }
+  }
+
+  @override
+  void dispose() {
+    _minController.dispose();
+    _maxController.dispose();
+    super.dispose();
   }
 
   void _onRangeChanged(RangeValues values) {
     setState(() {
       _rangeValues = values;
+      _minController.text = values.start == _minPrice
+          ? ''
+          : values.start.toStringAsFixed(0);
+      _maxController.text =
+          values.end == _maxPrice ? '' : values.end.toStringAsFixed(0);
     });
     widget.onChanged(
       values.start == _minPrice ? null : values.start,
       values.end == _maxPrice ? null : values.end,
     );
+  }
+
+  void _onMinPriceChanged(String value) {
+    final price = double.tryParse(value);
+    if (price != null && price >= _minPrice && price <= _maxPrice) {
+      final newMax = _rangeValues.end < price ? price : _rangeValues.end;
+      final newValues = RangeValues(price, newMax);
+      _onRangeChanged(newValues);
+    } else if (value.isEmpty) {
+      widget.onChanged(null, _rangeValues.end == _maxPrice ? null : _rangeValues.end);
+    }
+  }
+
+  void _onMaxPriceChanged(String value) {
+    final price = double.tryParse(value);
+    if (price != null && price >= _minPrice && price <= _maxPrice) {
+      final newMin = _rangeValues.start > price ? price : _rangeValues.start;
+      final newValues = RangeValues(newMin, price);
+      _onRangeChanged(newValues);
+    } else if (value.isEmpty) {
+      widget.onChanged(_rangeValues.start == _minPrice ? null : _rangeValues.start, null);
+    }
   }
 
   String _formatPrice(double value) {
@@ -122,25 +166,97 @@ class _PriceFilterSectionState extends State<PriceFilterSection> {
           activeColor: AppColors.primaryBlue,
           inactiveColor: AppColors.border,
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.md),
+        // Editable price inputs
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              _formatPrice(_rangeValues.start),
-              style: AppTypography.textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
+            Expanded(
+              child: _PriceInputField(
+                controller: _minController,
+                label: 'Min',
+                hint: '0',
+                onChanged: _onMinPriceChanged,
               ),
             ),
-            Text(
-              _formatPrice(_rangeValues.end),
-              style: AppTypography.textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _PriceInputField(
+                controller: _maxController,
+                label: 'Max',
+                hint: '10000',
+                onChanged: _onMaxPriceChanged,
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+class _PriceInputField extends StatelessWidget {
+  const _PriceInputField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTypography.textTheme.labelSmall?.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixText: '\$ ',
+            prefixStyle: AppTypography.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+            filled: true,
+            fillColor: AppColors.surfaceMuted,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: AppColors.primaryBlue,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+          ),
+          style: AppTypography.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+          onChanged: onChanged,
         ),
       ],
     );

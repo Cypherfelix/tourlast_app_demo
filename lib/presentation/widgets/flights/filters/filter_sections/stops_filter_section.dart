@@ -63,12 +63,14 @@ class StopsFilterSection extends StatelessWidget {
               stops: 0,
               isSelected: maxStops == 0,
               onTap: () => onChanged(maxStops == 0 ? null : 0),
+              maxStops: maxStops,
             ),
             _StopChip(
               label: '1 Stop',
               stops: 1,
               isSelected: maxStops == 1,
               onTap: () => onChanged(maxStops == 1 ? null : 1),
+              maxStops: maxStops,
             ),
             _StopChip(
               label: '2+ Stops',
@@ -76,6 +78,7 @@ class StopsFilterSection extends StatelessWidget {
               isSelected: maxStops != null && maxStops! >= 2,
               onTap: () =>
                   onChanged(maxStops != null && maxStops! >= 2 ? null : 2),
+              maxStops: maxStops,
             ),
           ],
         ),
@@ -90,15 +93,18 @@ class _StopChip extends StatelessWidget {
     required this.stops,
     required this.isSelected,
     required this.onTap,
+    required this.maxStops,
   });
 
   final String label;
   final int stops;
   final bool isSelected;
   final VoidCallback onTap;
+  final int? maxStops;
 
   @override
   Widget build(BuildContext context) {
+
     return FilterChip(
       selected: isSelected,
       label: Text(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_spacing.dart';
 import '../../../../../core/theme/app_typography.dart';
-import 'filter_models.dart';
+import 'filter_models.dart' show FlightFilters, sentinel;
 import 'filter_sections/airline_filter_section.dart';
 import 'filter_sections/baggage_filter_section.dart';
 import 'filter_sections/cabin_filter_section.dart';
@@ -57,18 +57,7 @@ class _FilterPanelState extends State<FilterPanel> {
     _updateFilters(resetFilters);
   }
 
-  int get _activeFilterCount {
-    int count = 0;
-    if (_currentFilters.selectedAirlines.isNotEmpty) count++;
-    if (_currentFilters.minPrice != null || _currentFilters.maxPrice != null) {
-      count++;
-    }
-    if (_currentFilters.departureTimeRanges.isNotEmpty) count++;
-    if (_currentFilters.selectedCabins.isNotEmpty) count++;
-    if (_currentFilters.maxStops != null) count++;
-    if (_currentFilters.hasBaggage != null) count++;
-    return count;
-  }
+  int get _activeFilterCount => _currentFilters.activeFilterCount;
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +166,12 @@ class _FilterPanelState extends State<FilterPanel> {
                     maxPrice: _currentFilters.maxPrice,
                     onChanged: (min, max) {
                       _updateFilters(
-                        _currentFilters.copyWith(minPrice: min, maxPrice: max),
+                        _currentFilters.copyWith(
+                          minPrice: min,
+                          maxPrice: max,
+                          minPriceNull: min == null ? const Object() : sentinel,
+                          maxPriceNull: max == null ? const Object() : sentinel,
+                        ),
                       );
                     },
                   ),
@@ -197,7 +191,11 @@ class _FilterPanelState extends State<FilterPanel> {
                     maxStops: _currentFilters.maxStops,
                     onChanged: (maxStops) {
                       _updateFilters(
-                        _currentFilters.copyWith(maxStops: maxStops),
+                        maxStops == null
+                            ? _currentFilters.copyWith(
+                                maxStopsNull: const Object(),
+                              )
+                            : _currentFilters.copyWith(maxStops: maxStops),
                       );
                     },
                   ),
@@ -227,12 +225,52 @@ class _FilterPanelState extends State<FilterPanel> {
                     hasBaggage: _currentFilters.hasBaggage,
                     onChanged: (hasBaggage) {
                       _updateFilters(
-                        _currentFilters.copyWith(hasBaggage: hasBaggage),
+                        _currentFilters.copyWith(
+                          hasBaggage: hasBaggage,
+                          hasBaggageNull: hasBaggage == null
+                              ? const Object()
+                              : sentinel,
+                        ),
                       );
                     },
                   ),
                   const SizedBox(height: AppSpacing.xl),
                 ],
+              ),
+            ),
+          ),
+          // Done button
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border(
+                top: BorderSide(color: AppColors.border, width: 1),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.check_rounded, size: 20),
+                  label: Text(
+                    'Done',
+                    style: AppTypography.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xl,
+                      vertical: AppSpacing.md,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
