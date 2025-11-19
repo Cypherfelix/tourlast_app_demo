@@ -17,9 +17,9 @@ class RouteDivider extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryBlue.withOpacity(0.2),
+                  AppColors.primaryBlue.withValues(alpha: 0.2),
                   AppColors.primaryBlue,
-                  AppColors.primaryBlue.withOpacity(0.2),
+                  AppColors.primaryBlue.withValues(alpha: 0.2),
                 ],
               ),
             ),
@@ -31,7 +31,7 @@ class RouteDivider extends StatelessWidget {
               vertical: AppSpacing.xs,
             ),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.primaryBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(999),
             ),
             child: Row(
@@ -50,3 +50,4 @@ class RouteDivider extends StatelessWidget {
     );
   }
 }
+  

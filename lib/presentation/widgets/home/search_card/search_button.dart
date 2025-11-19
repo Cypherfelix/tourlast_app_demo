@@ -85,7 +85,7 @@ class _SearchButtonState extends State<SearchButton>
                   borderRadius: BorderRadius.circular(16),
                 ),
                 backgroundColor: widget.isLoading
-                    ? AppColors.primaryBlue.withOpacity(0.7)
+                    ? AppColors.primaryBlue.withValues(alpha: 0.7)
                     : AppColors.primaryBlue,
               ),
               child: Row(

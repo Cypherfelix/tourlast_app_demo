@@ -87,7 +87,7 @@ class _AirportSelectorSheetState extends State<AirportSelectorSheet> {
                     height: 48,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primaryBlue.withOpacity(0.1)
+                          ? AppColors.primaryBlue.withValues(alpha: 0.1)
                           : AppColors.surfaceMuted,
                       borderRadius: BorderRadius.circular(12),
                     ),

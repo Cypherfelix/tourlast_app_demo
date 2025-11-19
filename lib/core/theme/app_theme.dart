@@ -52,7 +52,7 @@ class AppTheme {
         elevation: 2,
         margin: const EdgeInsets.all(AppSpacing.md),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        shadowColor: AppColors.primaryBlue.withOpacity(0.08),
+        shadowColor: AppColors.primaryBlue.withValues(alpha: 0.08),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -80,7 +80,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceMuted,
-        selectedColor: AppColors.primaryBlue.withOpacity(0.1),
+        selectedColor: AppColors.primaryBlue.withValues(alpha: 0.1),
         disabledColor: AppColors.surfaceMuted,
         side: const BorderSide(color: AppColors.border),
         labelStyle: AppTypography.textTheme.labelMedium,
