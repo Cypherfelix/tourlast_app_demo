@@ -6,14 +6,20 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../data/models/flight/fare_itinerary.dart';
 import '../../../providers/flight_providers.dart';
+import '../filters/filter_models.dart';
 import '../flight_card/flight_card.dart';
 import '../shimmer/flight_card_shimmer.dart';
 
 /// List of flight cards with loading and error states.
 class FlightList extends ConsumerWidget {
-  const FlightList({super.key, this.onFlightTap});
+  const FlightList({
+    super.key,
+    this.onFlightTap,
+    this.filters,
+  });
 
   final void Function(FareItinerary)? onFlightTap;
+  final FlightFilters? filters;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

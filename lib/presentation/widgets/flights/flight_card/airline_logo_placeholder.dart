@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
-/// Placeholder for airline logo (will be replaced with actual logo in Story 5.2).
+/// Placeholder for airline logo when logo is missing or loading.
 class AirlineLogoPlaceholder extends StatelessWidget {
-  const AirlineLogoPlaceholder({super.key});
+  const AirlineLogoPlaceholder({super.key, this.width = 52, this.height = 52});
+
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 52,
-      height: 52,
+      width: width,
+      height: height,
       decoration: BoxDecoration(
         color: AppColors.surfaceMuted,
         borderRadius: BorderRadius.circular(14),
@@ -18,7 +21,7 @@ class AirlineLogoPlaceholder extends StatelessWidget {
       ),
       child: Icon(
         Icons.airlines_rounded,
-        size: 26,
+        size: width * 0.5,
         color: AppColors.primaryBlue,
       ),
     );

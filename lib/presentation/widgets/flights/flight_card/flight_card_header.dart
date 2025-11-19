@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import 'airline_logo_placeholder.dart';
+import 'airline_logo.dart';
 
 /// Header section of flight card showing airline info.
 class FlightCardHeader extends StatelessWidget {
@@ -24,7 +24,24 @@ class FlightCardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const AirlineLogoPlaceholder(),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primaryBlue.withValues(alpha: 0.1),
+                AppColors.accentAqua.withValues(alpha: 0.05),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.primaryBlue.withValues(alpha: 0.2),
+              width: 1.5,
+            ),
+          ),
+          child: AirlineLogo(airlineCode: airlineCode),
+        ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Column(

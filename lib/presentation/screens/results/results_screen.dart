@@ -6,6 +6,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../providers/flight_providers.dart';
+import '../../widgets/flights/filters/filter_models.dart';
+import '../../widgets/flights/filters/filter_panel.dart';
 import '../../widgets/flights/flight_list/flight_list.dart';
 import '../../widgets/flights/hero_section/search_hero_section.dart';
 import '../../widgets/home/models/search_params.dart';
@@ -21,9 +23,19 @@ class ResultsScreen extends ConsumerStatefulWidget {
 
 class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   bool _showDetails = false;
+  bool _showFilters = false;
+  FlightFilters _filters = const FlightFilters();
 
   void _toggleDetails() {
     setState(() => _showDetails = !_showDetails);
+  }
+
+  void _toggleFilters() {
+    setState(() => _showFilters = !_showFilters);
+  }
+
+  void _onFiltersChanged(FlightFilters filters) {
+    setState(() => _filters = filters);
   }
 
   String get _formattedDate =>
@@ -67,8 +79,68 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                 flightCount: flightCount,
                 isExpanded: _showDetails,
               ),
+              // Filter button
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.border, width: 1),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: _toggleFilters,
+                        icon: Icon(
+                          _showFilters
+                              ? Icons.filter_list_rounded
+                              : Icons.tune_rounded,
+                          size: 18,
+                          color: AppColors.primaryBlue,
+                        ),
+                        label: Text(
+                          _showFilters ? 'Hide Filters' : 'Show Filters',
+                          style: AppTypography.textTheme.labelMedium?.copyWith(
+                            color: AppColors.primaryBlue,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.sm,
+                          ),
+                          backgroundColor: AppColors.primaryBlue.withValues(
+                            alpha: 0.08,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Filter panel
+              if (_showFilters)
+                Container(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.6,
+                  ),
+                  child: FilterPanel(
+                    filters: _filters,
+                    onFiltersChanged: _onFiltersChanged,
+                  ),
+                ),
               Expanded(
                 child: FlightList(
+                  filters: _filters,
                   onFlightTap: (fareItinerary) {
                     // TODO: Navigate to flight details in Story 6.1
                     ScaffoldMessenger.of(context).showSnackBar(
