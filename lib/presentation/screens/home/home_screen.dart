@@ -255,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _isSearching = true);
 
     // Simulate API call delay
-    await Future.delayed(const Duration(milliseconds: 1500));
+    await Future.delayed(const Duration(milliseconds: 3000));
 
     if (!mounted) return;
 
