@@ -1,0 +1,19 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'money.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+Money _$MoneyFromJson(Map<String, dynamic> json) => Money(
+  amount: json['amount'] as String,
+  currencyCode: json['currencyCode'] as String,
+  decimalPlaces: json['decimalPlaces'] as String,
+);
+
+Map<String, dynamic> _$MoneyToJson(Money instance) => <String, dynamic>{
+  'amount': instance.amount,
+  'currencyCode': instance.currencyCode,
+  'decimalPlaces': instance.decimalPlaces,
+};
