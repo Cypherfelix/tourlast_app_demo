@@ -6,9 +6,13 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/app_transitions.dart';
 import '../../../data/models/flight/fare_itinerary.dart';
 import '../../models/passenger_info.dart';
+import '../../providers/extra_service_providers.dart';
+import '../../providers/flight_details_providers.dart';
 import '../../widgets/home/models/search_params.dart';
+import 'payment_screen.dart';
 
 /// Passenger details entry screen for collecting passenger information.
 class PassengerDetailsScreen extends ConsumerStatefulWidget {
@@ -315,11 +319,47 @@ class _PassengerDetailsScreenState
       return;
     }
 
-    // TODO: Save passenger data and navigate to payment
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Passenger details saved. Proceeding to payment...'),
-        backgroundColor: AppColors.primaryBlue,
+    // Calculate total amount including extra services
+    final flightDetailsState = ref.read(
+      flightDetailsStateProvider(widget.flightId),
+    );
+    final selectedServices = flightDetailsState.selectedServices;
+    final extraServicesAsync = ref.read(extraServicesProvider);
+
+    final fareInfo = widget.fareItinerary.airItineraryFareInfo;
+    final baseFare = fareInfo.itinTotalFares.totalFare.amountValue;
+    final currencyCode = fareInfo.itinTotalFares.totalFare.currencyCode;
+
+    double extraServicesTotal = 0.0;
+    extraServicesAsync.whenData((response) {
+      final data =
+          response.extraServicesResponse.extraServicesResult.extraServicesData;
+      for (final baggage in data.dynamicBaggage) {
+        for (final serviceGroup in baggage.services) {
+          for (final service in serviceGroup) {
+            final quantity = selectedServices[service.serviceId] ?? 0;
+            if (quantity > 0) {
+              extraServicesTotal += service.serviceCost.amountValue * quantity;
+            }
+          }
+        }
+      }
+    });
+
+    final totalAmount = baseFare + extraServicesTotal;
+
+    // TODO: Save passenger data to state/provider
+
+    // Navigate to payment screen
+    Navigator.of(context).push(
+      AppTransitions.slideFromRight(
+        PaymentScreen(
+          fareItinerary: widget.fareItinerary,
+          searchParams: widget.searchParams,
+          flightId: widget.flightId,
+          totalAmount: totalAmount,
+          currencyCode: currencyCode,
+        ),
       ),
     );
   }
