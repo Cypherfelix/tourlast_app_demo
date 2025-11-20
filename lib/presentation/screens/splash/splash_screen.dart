@@ -20,7 +20,6 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _logoRotationAnimation;
 
   @override
   void initState() {
@@ -46,13 +45,6 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
-      ),
-    );
-
-    _logoRotationAnimation = Tween<double>(begin: 0.0, end: 0.1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.8, curve: Curves.easeInOut),
       ),
     );
   }
@@ -134,28 +126,52 @@ class _SplashScreenState extends State<SplashScreen>
                   builder: (context, child) {
                     return Transform.scale(
                       scale: _scaleAnimation.value,
-                      child: Transform.rotate(
-                        angle: _logoRotationAnimation.value,
-                        child: Opacity(
-                          opacity: _fadeAnimation.value,
-                          child: Container(
-                            padding: const EdgeInsets.all(AppSpacing.xl),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primaryBlue.withOpacity(0.2),
-                                  blurRadius: 30,
-                                  spreadRadius: 5,
+                      child: Opacity(
+                        opacity: _fadeAnimation.value,
+                        child: Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryBlue.withValues(
+                                  alpha: 0.3,
                                 ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.flight_takeoff_rounded,
-                              size: 64,
-                              color: AppColors.primaryBlue,
-                            ),
+                                blurRadius: 40,
+                                spreadRadius: 10,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Image.asset(
+                            'assets/images/ic_launcher.png',
+                            width: 200,
+                            height: 200,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              // Fallback to icon if image fails to load
+                              return Container(
+                                padding: const EdgeInsets.all(AppSpacing.xl),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primaryBlue.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      blurRadius: 30,
+                                      spreadRadius: 5,
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.flight_takeoff_rounded,
+                                  size: 64,
+                                  color: AppColors.primaryBlue,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -163,24 +179,7 @@ class _SplashScreenState extends State<SplashScreen>
                   },
                 ),
                 const SizedBox(height: AppSpacing.xxl),
-                // App Name
-                AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _fadeAnimation.value,
-                      child: Text(
-                        'TourLast',
-                        style: AppTypography.textTheme.displayMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -1,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: AppSpacing.xs),
+                // Tagline
                 AnimatedBuilder(
                   animation: _controller,
                   builder: (context, child) {

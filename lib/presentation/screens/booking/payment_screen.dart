@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/app_transitions.dart';
 import '../../../data/models/flight/fare_itinerary.dart';
+import '../../widgets/common/payment_loading_overlay.dart';
 import '../../widgets/home/models/search_params.dart';
 import 'booking_confirmation_screen.dart';
 
@@ -45,6 +48,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   final _phoneNumberController = TextEditingController();
 
   bool _isProcessing = false;
+  bool _simulateFailure = false;
 
   @override
   void dispose() {
@@ -63,17 +67,52 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
     setState(() => _isProcessing = true);
 
+    // Get payment method label
+    String paymentMethodLabel;
+    switch (_selectedPaymentMethod) {
+      case PaymentMethod.card:
+        paymentMethodLabel = 'Credit/Debit Card';
+        break;
+      case PaymentMethod.mobileMoney:
+        paymentMethodLabel = 'Mobile Money';
+        break;
+      case PaymentMethod.bankTransfer:
+        paymentMethodLabel = 'Bank Transfer';
+        break;
+    }
+
+    // Show loading overlay
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      builder: (context) => PaymentLoadingOverlay(
+        amount: widget.totalAmount,
+        currencyCode: widget.currencyCode,
+        paymentMethod: paymentMethodLabel,
+      ),
+    );
+
     // Simulate payment processing
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 4), () {
       if (!mounted) return;
 
+      // Close loading overlay
+      Navigator.of(context).pop();
+
       setState(() => _isProcessing = false);
+
+      // Check if failure simulation is enabled
+      if (_simulateFailure) {
+        _showPaymentFailureDialog();
+        return;
+      }
 
       // Generate booking reference
       final bookingReference = _generateBookingReference();
 
-      // Navigate to confirmation screen
-      Navigator.of(context).pushReplacement(
+      // Navigate to confirmation screen and clear all previous routes
+      Navigator.of(context).pushAndRemoveUntil(
         AppTransitions.slideFromRight(
           BookingConfirmationScreen(
             fareItinerary: widget.fareItinerary,
@@ -84,17 +123,221 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             bookingReference: bookingReference,
           ),
         ),
+        (route) => false, // Clear all previous routes
       );
     });
+  }
+
+  void _showHelpDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.help_outline, color: AppColors.primaryBlue, size: 24),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              'Payment Test Options',
+              style: AppTypography.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Use this option to test payment failure scenarios.',
+              style: AppTypography.textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Simulate Payment Failure',
+                    style: AppTypography.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: _simulateFailure,
+                  onChanged: (value) {
+                    setState(() => _simulateFailure = value);
+                    Navigator.of(context).pop();
+                    if (value) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Row(
+                            children: [
+                              Icon(Icons.error_outline, color: Colors.white),
+                              SizedBox(width: AppSpacing.sm),
+                              Text('Payment failure simulation enabled'),
+                            ],
+                          ),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  activeColor: AppColors.primaryBlue,
+                ),
+              ],
+            ),
+            if (_simulateFailure) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.red.shade700,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        'Next payment attempt will fail',
+                        style: AppTypography.textTheme.bodySmall?.copyWith(
+                          color: Colors.red.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Close',
+              style: AppTypography.textTheme.bodyMedium?.copyWith(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPaymentFailureDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.error_outline,
+                color: Colors.red.shade700,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                'Payment Failed',
+                style: AppTypography.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.red.shade700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your payment could not be processed. Please try again.',
+              style: AppTypography.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Possible reasons:',
+                    style: AppTypography.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  _FailureReasonItem('Insufficient funds'),
+                  _FailureReasonItem('Card declined'),
+                  _FailureReasonItem('Network error'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'Try Again',
+              style: AppTypography.textTheme.bodyMedium?.copyWith(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   String _generateBookingReference() {
     // Generate a random booking reference (e.g., ABC123XY)
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final random = DateTime.now().millisecondsSinceEpoch;
+    var random = DateTime.now().millisecondsSinceEpoch;
     final reference = StringBuffer();
 
     for (int i = 0; i < 8; i++) {
+      random = Random().nextInt(chars.length);
       reference.write(chars[random % chars.length]);
     }
 
@@ -117,6 +360,16 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _simulateFailure ? Icons.error_outline : Icons.help_outline,
+              color: _simulateFailure ? Colors.red.shade300 : Colors.white,
+            ),
+            onPressed: _showHelpDialog,
+            tooltip: 'Help & Test Options',
+          ),
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -745,6 +998,32 @@ class ExpiryDateFormatter extends TextInputFormatter {
     return TextEditingValue(
       text: buffer.toString(),
       selection: TextSelection.collapsed(offset: buffer.length),
+    );
+  }
+}
+
+/// Helper widget for failure reason items.
+class _FailureReasonItem extends StatelessWidget {
+  const _FailureReasonItem(this.reason);
+
+  final String reason;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.xs),
+      child: Row(
+        children: [
+          Icon(Icons.circle, size: 6, color: AppColors.textSecondary),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            reason,
+            style: AppTypography.textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

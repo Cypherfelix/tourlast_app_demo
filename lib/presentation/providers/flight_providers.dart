@@ -46,3 +46,44 @@ final filteredFlightListProvider =
     );
   },
 );
+
+/// Provider that extracts unique cabin classes from flights data.
+final cabinClassesProvider = Provider<AsyncValue<List<String>>>((ref) {
+  final flightsAsync = ref.watch(flightListProvider);
+  return flightsAsync.when(
+    data: (flights) {
+      final cabinClasses = <String>{};
+      
+      for (final flight in flights) {
+        for (final option in flight.airItinerary.originDestinationOptions) {
+          for (final originDest in option.originDestinationOption) {
+            final cabinClass = originDest.flightSegment.cabinClassText;
+            if (cabinClass.isNotEmpty) {
+              cabinClasses.add(cabinClass);
+            }
+          }
+        }
+      }
+      
+      // Sort cabin classes in a logical order
+      final sortedCabins = cabinClasses.toList()
+        ..sort((a, b) {
+          // Custom sorting: BASIC, BASIC FLEX, PLUS, MAX, then alphabetically
+          final order = ['BASIC', 'BASIC FLEX', 'PLUS', 'MAX'];
+          final aIndex = order.indexOf(a);
+          final bIndex = order.indexOf(b);
+          
+          if (aIndex != -1 && bIndex != -1) {
+            return aIndex.compareTo(bIndex);
+          }
+          if (aIndex != -1) return -1;
+          if (bIndex != -1) return 1;
+          return a.compareTo(b);
+        });
+      
+      return AsyncValue.data(sortedCabins);
+    },
+    loading: () => const AsyncValue.loading(),
+    error: (error, stackTrace) => AsyncValue.error(error, stackTrace),
+  );
+});

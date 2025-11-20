@@ -6,12 +6,13 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../data/models/flight/fare_itinerary.dart';
+import '../../providers/flight_details_providers.dart';
 import '../../screens/home/home_screen.dart';
 import '../../widgets/flights/flight_card/airline_logo.dart';
 import '../../widgets/home/models/search_params.dart';
 
 /// Booking confirmation screen shown after successful payment.
-class BookingConfirmationScreen extends ConsumerWidget {
+class BookingConfirmationScreen extends ConsumerStatefulWidget {
   const BookingConfirmationScreen({
     super.key,
     required this.fareItinerary,
@@ -30,7 +31,43 @@ class BookingConfirmationScreen extends ConsumerWidget {
   final String bookingReference;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BookingConfirmationScreen> createState() =>
+      _BookingConfirmationScreenState();
+}
+
+class _BookingConfirmationScreenState
+    extends ConsumerState<BookingConfirmationScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Clear all booking-related state after booking is confirmed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _clearBookingState();
+    });
+  }
+
+  void _clearBookingState() {
+    // Reset flight details state completely for this booking
+    try {
+      ref.read(flightDetailsStateProvider(widget.flightId).notifier).reset();
+    } catch (e) {
+      // Provider might not exist, ignore
+    }
+  }
+
+  void _navigateToHome() {
+    // Clear all booking state before navigating
+    _clearBookingState();
+
+    // Navigate to home and clear navigation stack
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      (route) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final segments = _getAllSegments();
     final firstSegment = segments.isNotEmpty ? segments.first : null;
     final lastSegment = segments.isNotEmpty ? segments.last : null;
@@ -41,9 +78,17 @@ class BookingConfirmationScreen extends ConsumerWidget {
     final arrivalTime = lastSegment?.arrivalDateTime ?? '';
     final flightNumber = firstSegment?.flightNumber ?? '';
 
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: SafeArea(
+    // Handle back button - navigate to home
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _navigateToHome();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
+        body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
@@ -87,7 +132,9 @@ class BookingConfirmationScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xl),
               
               // Booking Reference Card
-              _BookingReferenceCard(bookingReference: bookingReference),
+                _BookingReferenceCard(
+                  bookingReference: widget.bookingReference,
+                ),
               const SizedBox(height: AppSpacing.lg),
               
               // Flight Details Card
@@ -98,24 +145,24 @@ class BookingConfirmationScreen extends ConsumerWidget {
                 departureTime: departureTime,
                 arrivalTime: arrivalTime,
                 flightNumber: flightNumber,
-                departureDate: searchParams.departureDate,
+                  departureDate: widget.searchParams.departureDate,
               ),
               const SizedBox(height: AppSpacing.md),
               
               // Passenger Summary
-              _PassengerSummaryCard(searchParams: searchParams),
+                _PassengerSummaryCard(searchParams: widget.searchParams),
               const SizedBox(height: AppSpacing.md),
               
               // Payment Summary
               _PaymentSummaryCard(
-                totalAmount: totalAmount,
-                currencyCode: currencyCode,
+                  totalAmount: widget.totalAmount,
+                  currencyCode: widget.currencyCode,
               ),
               const SizedBox(height: AppSpacing.xl),
               
               // Action Buttons
               _ActionButtons(
-                bookingReference: bookingReference,
+                  bookingReference: widget.bookingReference,
                 onViewBooking: () {
                   // TODO: Navigate to booking details
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -134,25 +181,21 @@ class BookingConfirmationScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                onGoHome: () {
-                  // Navigate to home and clear navigation stack
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    (route) => false,
-                  );
-                },
+                  onGoHome: _navigateToHome,
               ),
               const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),
       ),
+      ),
     );
   }
 
   List<dynamic> _getAllSegments() {
     final segments = <dynamic>[];
-    for (final option in fareItinerary.airItinerary.originDestinationOptions) {
+    for (final option
+        in widget.fareItinerary.airItinerary.originDestinationOptions) {
       for (final item in option.originDestinationOption) {
         segments.add(item.flightSegment);
       }

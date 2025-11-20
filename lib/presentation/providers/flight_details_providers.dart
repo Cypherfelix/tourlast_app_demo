@@ -72,6 +72,11 @@ class FlightDetailsStateNotifier extends StateNotifier<FlightDetailsState> {
   void clearServices() {
     state = state.copyWith(selectedServices: {});
   }
+
+  /// Reset state completely (clears fareItinerary, services, and scroll position).
+  void reset() {
+    state = _initialState;
+  }
 }
 
 /// Helper to generate unique flight ID for state management.
