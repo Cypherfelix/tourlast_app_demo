@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/app_transitions.dart';
 import '../../../data/models/flight/fare_itinerary.dart';
 import '../../widgets/home/models/search_params.dart';
+import 'booking_confirmation_screen.dart';
 
 /// Payment screen for completing the booking transaction.
 class PaymentScreen extends ConsumerStatefulWidget {
@@ -32,16 +34,16 @@ class PaymentScreen extends ConsumerStatefulWidget {
 class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   final _formKey = GlobalKey<FormState>();
   PaymentMethod _selectedPaymentMethod = PaymentMethod.card;
-  
+
   // Card details controllers
   final _cardNumberController = TextEditingController();
   final _cardHolderNameController = TextEditingController();
   final _expiryDateController = TextEditingController();
   final _cvvController = TextEditingController();
-  
+
   // Mobile money controllers
   final _phoneNumberController = TextEditingController();
-  
+
   bool _isProcessing = false;
 
   @override
@@ -64,25 +66,39 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     // Simulate payment processing
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
-      
+
       setState(() => _isProcessing = false);
-      
-      // TODO: Navigate to confirmation screen
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Payment processed successfully!'),
-          backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 2),
+
+      // Generate booking reference
+      final bookingReference = _generateBookingReference();
+
+      // Navigate to confirmation screen
+      Navigator.of(context).pushReplacement(
+        AppTransitions.slideFromRight(
+          BookingConfirmationScreen(
+            fareItinerary: widget.fareItinerary,
+            searchParams: widget.searchParams,
+            flightId: widget.flightId,
+            totalAmount: widget.totalAmount,
+            currencyCode: widget.currencyCode,
+            bookingReference: bookingReference,
+          ),
         ),
       );
-      
-      // Navigate to confirmation screen
-      // Navigator.of(context).pushReplacement(
-      //   AppTransitions.slideFromRight(
-      //     BookingConfirmationScreen(...),
-      //   ),
-      // );
     });
+  }
+
+  String _generateBookingReference() {
+    // Generate a random booking reference (e.g., ABC123XY)
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = DateTime.now().millisecondsSinceEpoch;
+    final reference = StringBuffer();
+
+    for (int i = 0; i < 8; i++) {
+      reference.write(chars[random % chars.length]);
+    }
+
+    return reference.toString();
   }
 
   @override
@@ -118,7 +134,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       currencyCode: widget.currencyCode,
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    
+
                     // Payment Method Selection
                     Text(
                       'Select Payment Method',
@@ -135,7 +151,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       },
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    
+
                     // Payment Form
                     if (_selectedPaymentMethod == PaymentMethod.card)
                       _CardPaymentForm(
@@ -144,17 +160,18 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                         expiryDateController: _expiryDateController,
                         cvvController: _cvvController,
                       )
-                    else if (_selectedPaymentMethod == PaymentMethod.mobileMoney)
+                    else if (_selectedPaymentMethod ==
+                        PaymentMethod.mobileMoney)
                       _MobileMoneyForm(
                         phoneNumberController: _phoneNumberController,
                       ),
-                    
+
                     const SizedBox(height: AppSpacing.xl),
                   ],
                 ),
               ),
             ),
-            
+
             // Pay Button
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -176,15 +193,23 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : const Icon(Icons.payment_rounded),
-                    label: Text(_isProcessing ? 'Processing...' : 'Pay ${widget.currencyCode} ${widget.totalAmount.toStringAsFixed(2)}'),
+                    label: Text(
+                      _isProcessing
+                          ? 'Processing...'
+                          : 'Pay ${widget.currencyCode} ${widget.totalAmount.toStringAsFixed(2)}',
+                    ),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primaryBlue,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.md,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -219,9 +244,7 @@ class _AmountSummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primaryBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -332,52 +355,52 @@ class _PaymentMethodChip extends StatelessWidget {
                 : AppColors.surfaceMuted,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected
-                  ? AppColors.primaryBlue
-                  : AppColors.border,
+              color: isSelected ? AppColors.primaryBlue : AppColors.border,
               width: isSelected ? 2 : 1,
             ),
           ),
           child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 24,
-              color: isSelected
-                  ? AppColors.primaryBlue
-                  : AppColors.textSecondary,
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                label,
-                style: AppTypography.textTheme.bodyMedium?.copyWith(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected
-                      ? AppColors.primaryBlue
-                      : AppColors.textPrimary,
-                ),
-              ),
-            ),
-            if (isSelected)
+            children: [
               Icon(
-                Icons.check_circle_rounded,
-                size: 20,
-                color: AppColors.primaryBlue,
+                icon,
+                size: 24,
+                color: isSelected
+                    ? AppColors.primaryBlue
+                    : AppColors.textSecondary,
               ),
-            if (isDisabled)
-              Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
                 child: Text(
-                  'Coming Soon',
-                  style: AppTypography.textTheme.labelSmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 10,
+                  label,
+                  style: AppTypography.textTheme.bodyMedium?.copyWith(
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                    color: isSelected
+                        ? AppColors.primaryBlue
+                        : AppColors.textPrimary,
                   ),
                 ),
               ),
-          ],
-        ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 20,
+                  color: AppColors.primaryBlue,
+                ),
+              if (isDisabled)
+                Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.sm),
+                  child: Text(
+                    'Coming Soon',
+                    style: AppTypography.textTheme.labelSmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -418,7 +441,7 @@ class _CardPaymentForm extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          
+
           // Card Number
           _CardTextField(
             controller: cardNumberController,
@@ -442,7 +465,7 @@ class _CardPaymentForm extends StatelessWidget {
             prefixIcon: Icons.credit_card_rounded,
           ),
           const SizedBox(height: AppSpacing.md),
-          
+
           // Card Holder Name
           _CardTextField(
             controller: cardHolderNameController,
@@ -458,7 +481,7 @@ class _CardPaymentForm extends StatelessWidget {
             prefixIcon: Icons.person_rounded,
           ),
           const SizedBox(height: AppSpacing.md),
-          
+
           // Expiry Date and CVV Row
           Row(
             children: [
@@ -605,9 +628,7 @@ class _CardTextField extends StatelessWidget {
 
 /// Mobile money form
 class _MobileMoneyForm extends StatelessWidget {
-  const _MobileMoneyForm({
-    required this.phoneNumberController,
-  });
+  const _MobileMoneyForm({required this.phoneNumberController});
 
   final TextEditingController phoneNumberController;
 
@@ -636,9 +657,7 @@ class _MobileMoneyForm extends StatelessWidget {
             label: 'Phone Number',
             hint: '254712345678',
             keyboardType: TextInputType.phone,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-            ],
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Phone number is required';
@@ -691,14 +710,14 @@ class CardNumberFormatter extends TextInputFormatter {
   ) {
     final text = newValue.text.replaceAll(' ', '');
     final buffer = StringBuffer();
-    
+
     for (int i = 0; i < text.length; i++) {
       if (i > 0 && i % 4 == 0) {
         buffer.write(' ');
       }
       buffer.write(text[i]);
     }
-    
+
     return TextEditingValue(
       text: buffer.toString(),
       selection: TextSelection.collapsed(offset: buffer.length),
@@ -715,18 +734,17 @@ class ExpiryDateFormatter extends TextInputFormatter {
   ) {
     final text = newValue.text.replaceAll('/', '');
     final buffer = StringBuffer();
-    
+
     for (int i = 0; i < text.length; i++) {
       if (i == 2) {
         buffer.write('/');
       }
       buffer.write(text[i]);
     }
-    
+
     return TextEditingValue(
       text: buffer.toString(),
       selection: TextSelection.collapsed(offset: buffer.length),
     );
   }
 }
-
