@@ -13,9 +13,13 @@ class ExtraServicesSection extends ConsumerStatefulWidget {
   const ExtraServicesSection({
     super.key,
     this.onTotalChanged,
+    this.selectedServices = const {},
+    this.onServiceQuantityChanged,
   });
 
   final ValueChanged<double>? onTotalChanged;
+  final Map<String, int> selectedServices;
+  final ValueChanged2<String, int>? onServiceQuantityChanged;
 
   @override
   ConsumerState<ExtraServicesSection> createState() =>
@@ -24,9 +28,10 @@ class ExtraServicesSection extends ConsumerStatefulWidget {
 
 class _ExtraServicesSectionState
     extends ConsumerState<ExtraServicesSection> {
-  final Map<String, int> _selectedServices = {};
   double _totalExtraCost = 0.0;
   String _currencyCode = 'USD';
+
+  Map<String, int> get _selectedServices => widget.selectedServices;
 
   @override
   void initState() {
@@ -34,15 +39,17 @@ class _ExtraServicesSectionState
     _calculateTotal();
   }
 
-  void _updateServiceQuantity(String serviceId, int quantity) {
-    setState(() {
-      if (quantity <= 0) {
-        _selectedServices.remove(serviceId);
-      } else {
-        _selectedServices[serviceId] = quantity;
-      }
+  @override
+  void didUpdateWidget(ExtraServicesSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedServices != widget.selectedServices) {
       _calculateTotal();
-    });
+    }
+  }
+
+  void _updateServiceQuantity(String serviceId, int quantity) {
+    widget.onServiceQuantityChanged?.call(serviceId, quantity);
+    _calculateTotal();
     widget.onTotalChanged?.call(_totalExtraCost);
   }
 
@@ -84,29 +91,23 @@ class _ExtraServicesSectionState
           'Extra Services',
           Column(
             children: [
-              if (data.dynamicBaggage.isNotEmpty)
-                _BaggageSection(
-                  baggageOptions: data.dynamicBaggage,
-                  selectedServices: _selectedServices,
-                  onQuantityChanged: _updateServiceQuantity,
-                ),
-              if (data.dynamicBaggage.isNotEmpty &&
-                  (data.dynamicMeal.isNotEmpty || data.dynamicSeat.isNotEmpty))
-                const SizedBox(height: AppSpacing.lg),
-              if (data.dynamicMeal.isNotEmpty)
-                _MealSection(
-                  mealOptions: data.dynamicMeal,
-                  selectedServices: _selectedServices,
-                  onQuantityChanged: _updateServiceQuantity,
-                ),
-              if (data.dynamicMeal.isNotEmpty && data.dynamicSeat.isNotEmpty)
-                const SizedBox(height: AppSpacing.lg),
-              if (data.dynamicSeat.isNotEmpty)
-                _SeatSection(
-                  seatOptions: data.dynamicSeat,
-                  selectedServices: _selectedServices,
-                  onQuantityChanged: _updateServiceQuantity,
-                ),
+              _BaggageSection(
+                baggageOptions: data.dynamicBaggage,
+                selectedServices: _selectedServices,
+                onQuantityChanged: _updateServiceQuantity,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _MealSection(
+                mealOptions: data.dynamicMeal,
+                selectedServices: _selectedServices,
+                onQuantityChanged: _updateServiceQuantity,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _SeatSection(
+                seatOptions: data.dynamicSeat,
+                selectedServices: _selectedServices,
+                onQuantityChanged: _updateServiceQuantity,
+              ),
               if (_selectedServices.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.lg),
                 const Divider(),
@@ -212,7 +213,7 @@ class _ExtraServicesSectionState
   }
 }
 
-class _BaggageSection extends StatelessWidget {
+class _BaggageSection extends StatefulWidget {
   const _BaggageSection({
     required this.baggageOptions,
     required this.selectedServices,
@@ -224,53 +225,86 @@ class _BaggageSection extends StatelessWidget {
   final ValueChanged2<String, int> onQuantityChanged;
 
   @override
+  State<_BaggageSection> createState() => _BaggageSectionState();
+}
+
+class _BaggageSectionState extends State<_BaggageSection> {
+  bool _isExpanded = true;
+
+  @override
   Widget build(BuildContext context) {
+    final hasBaggage = widget.baggageOptions.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(
-              Icons.luggage_rounded,
-              size: 18,
-              color: AppColors.primaryBlue,
+        InkWell(
+          onTap: () => setState(() => _isExpanded = !_isExpanded),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.luggage_rounded,
+                  size: 18,
+                  color: AppColors.primaryBlue,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    'Baggage',
+                    style: AppTypography.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _isExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: AppColors.textSecondary,
+                ),
+              ],
             ),
-            const SizedBox(width: AppSpacing.xs),
-            Text(
-              'Baggage',
-              style: AppTypography.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
+          ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        ...baggageOptions.map((baggage) {
-          // Handle DynamicBaggage type
-          final services = baggage.services as List<List<dynamic>>;
-          final firstGroup = services.firstOrNull ?? [];
-          
-          return Column(
-            children: firstGroup.map((service) {
-              final extraService = service as ExtraService;
-              final quantity = selectedServices[extraService.serviceId] ?? 0;
+        if (_isExpanded) ...[
+          const SizedBox(height: AppSpacing.md),
+          if (hasBaggage)
+            ...widget.baggageOptions.map((baggage) {
+              // Handle DynamicBaggage type
+              final services = baggage.services as List<List<dynamic>>;
+              final firstGroup = services.firstOrNull ?? [];
+              
+              return Column(
+                children: firstGroup.map((service) {
+                  final extraService = service as ExtraService;
+                  final quantity = widget.selectedServices[extraService.serviceId] ?? 0;
 
-              return _ServiceItem(
-                service: extraService,
-                quantity: quantity,
-                onQuantityChanged: (newQuantity) =>
-                    onQuantityChanged(extraService.serviceId, newQuantity),
+                  return _ServiceItem(
+                    service: extraService,
+                    quantity: quantity,
+                    onQuantityChanged: (newQuantity) =>
+                        widget.onQuantityChanged(extraService.serviceId, newQuantity),
+                  );
+                }).toList(),
               );
-            }).toList(),
-          );
-        }).toList(),
+            })
+          else
+            _EmptyState(
+              icon: Icons.luggage_rounded,
+              message: 'No baggage options available',
+            ),
+        ],
       ],
     );
   }
 }
 
-class _MealSection extends StatelessWidget {
+class _MealSection extends StatefulWidget {
   const _MealSection({
     required this.mealOptions,
     required this.selectedServices,
@@ -282,13 +316,74 @@ class _MealSection extends StatelessWidget {
   final ValueChanged2<String, int> onQuantityChanged;
 
   @override
+  State<_MealSection> createState() => _MealSectionState();
+}
+
+class _MealSectionState extends State<_MealSection> {
+  bool _isExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    // TODO: Implement when meal model is available
-    return const SizedBox.shrink();
+    final hasMeals = widget.mealOptions.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () => setState(() => _isExpanded = !_isExpanded),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.restaurant_rounded,
+                  size: 18,
+                  color: AppColors.primaryBlue,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    'Meals',
+                    style: AppTypography.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _isExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: AppColors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isExpanded) ...[
+          const SizedBox(height: AppSpacing.md),
+          if (hasMeals)
+            // TODO: Implement meal items when meal model is available
+            Text(
+              'Meal options coming soon',
+              style: AppTypography.textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            )
+          else
+            _EmptyState(
+              icon: Icons.restaurant_rounded,
+              message: 'No meal options available',
+            ),
+        ],
+      ],
+    );
   }
 }
 
-class _SeatSection extends StatelessWidget {
+class _SeatSection extends StatefulWidget {
   const _SeatSection({
     required this.seatOptions,
     required this.selectedServices,
@@ -300,9 +395,70 @@ class _SeatSection extends StatelessWidget {
   final ValueChanged2<String, int> onQuantityChanged;
 
   @override
+  State<_SeatSection> createState() => _SeatSectionState();
+}
+
+class _SeatSectionState extends State<_SeatSection> {
+  bool _isExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    // TODO: Implement when seat model is available
-    return const SizedBox.shrink();
+    final hasSeats = widget.seatOptions.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () => setState(() => _isExpanded = !_isExpanded),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.event_seat_rounded,
+                  size: 18,
+                  color: AppColors.primaryBlue,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    'Seats',
+                    style: AppTypography.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _isExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: AppColors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isExpanded) ...[
+          const SizedBox(height: AppSpacing.md),
+          if (hasSeats)
+            // TODO: Implement seat items when seat model is available
+            Text(
+              'Seat options coming soon',
+              style: AppTypography.textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            )
+          else
+            _EmptyState(
+              icon: Icons.event_seat_rounded,
+              message: 'No seat options available',
+            ),
+        ],
+      ],
+    );
   }
 }
 
@@ -474,6 +630,53 @@ class _TotalRow extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// Empty state widget for sections with no options
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({
+    required this.icon,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.lg,
+        horizontal: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: AppColors.border,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTypography.textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

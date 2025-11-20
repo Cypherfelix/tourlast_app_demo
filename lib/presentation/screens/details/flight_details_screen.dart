@@ -4,27 +4,91 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/app_transitions.dart';
 import '../../../data/models/flight/fare_itinerary.dart';
+import '../../providers/flight_details_providers.dart';
+import '../../screens/booking/booking_summary_screen.dart';
 import '../../widgets/flights/details/flight_timeline_section.dart';
 import '../../widgets/flights/details/flight_summary_section.dart';
 import '../../widgets/flights/details/fare_breakdown_card.dart';
 import '../../widgets/flights/details/extra_services_section.dart';
 import '../../widgets/flights/flight_card/airline_logo.dart';
+import '../../widgets/home/models/search_params.dart';
 
 /// Flight details screen showing comprehensive flight information.
-class FlightDetailsScreen extends ConsumerWidget {
-  const FlightDetailsScreen({super.key, required this.fareItinerary});
+class FlightDetailsScreen extends ConsumerStatefulWidget {
+  const FlightDetailsScreen({
+    super.key,
+    required this.fareItinerary,
+    this.searchParams,
+  });
 
   final FareItinerary fareItinerary;
+  final SearchParams? searchParams;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final segments = _getAllSegments();
+  ConsumerState<FlightDetailsScreen> createState() =>
+      _FlightDetailsScreenState();
+}
+
+class _FlightDetailsScreenState extends ConsumerState<FlightDetailsScreen>
+    with AutomaticKeepAliveClientMixin {
+  late final ScrollController _scrollController;
+  late final String _flightId;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _flightId = generateFlightId(widget.fareItinerary);
+    _scrollController = ScrollController();
+
+    // Initialize state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(flightDetailsStateProvider(_flightId).notifier)
+          .initialize(widget.fareItinerary);
+
+      // Restore scroll position
+      final savedPosition = ref
+          .read(flightDetailsStateProvider(_flightId))
+          .scrollPosition;
+      if (savedPosition > 0 && _scrollController.hasClients) {
+        _scrollController.jumpTo(savedPosition);
+      }
+    });
+
+    // Save scroll position
+    _scrollController.addListener(() {
+      if (_scrollController.hasClients) {
+        ref
+            .read(flightDetailsStateProvider(_flightId).notifier)
+            .updateScrollPosition(_scrollController.offset);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+
+    final state = ref.watch(flightDetailsStateProvider(_flightId));
+    final fareItinerary = state.fareItinerary ?? widget.fareItinerary;
+
+    final segments = _getAllSegments(fareItinerary);
     final firstSegment = segments.isNotEmpty ? segments.first : null;
     final lastSegment = segments.isNotEmpty ? segments.last : null;
     final airlineCode = firstSegment?.marketingAirlineCode ?? '';
     final airlineName = firstSegment?.marketingAirlineName ?? '';
-    final stops = _getNumberOfStops();
+    final stops = _getNumberOfStops(fareItinerary);
     final totalFare =
         fareItinerary.airItineraryFareInfo.itinTotalFares.totalFare;
     final isRefundable =
@@ -48,6 +112,7 @@ class FlightDetailsScreen extends ConsumerWidget {
           // Scrollable content
           Expanded(
             child: SingleChildScrollView(
+              controller: _scrollController,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -68,7 +133,57 @@ class FlightDetailsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   // Extra services
-                  ExtraServicesSection(),
+                  ExtraServicesSection(
+                    selectedServices: state.selectedServices,
+                    onServiceQuantityChanged: (serviceId, quantity) {
+                      ref
+                          .read(flightDetailsStateProvider(_flightId).notifier)
+                          .updateServiceQuantity(serviceId, quantity);
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  
+                  // Proceed to Booking Button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          final searchParams = widget.searchParams;
+                          if (searchParams == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Search parameters not available'),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                            return;
+                          }
+                          
+                          Navigator.of(context).push(
+                            AppTransitions.slideFromRight(
+                              BookingSummaryScreen(
+                                fareItinerary: fareItinerary,
+                                searchParams: searchParams,
+                                flightId: _flightId,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_forward_rounded),
+                        label: const Text('Proceed to Booking'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primaryBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.xl),
                 ],
               ),
@@ -90,6 +205,7 @@ class FlightDetailsScreen extends ConsumerWidget {
     String currencyCode,
   ) {
     final flightNumber = firstSegment?.flightNumber ?? '';
+    final fareItinerary = widget.fareItinerary;
 
     return Container(
       width: double.infinity,
@@ -300,7 +416,7 @@ class FlightDetailsScreen extends ConsumerWidget {
     );
   }
 
-  List<dynamic> _getAllSegments() {
+  List<dynamic> _getAllSegments(FareItinerary fareItinerary) {
     final segments = <dynamic>[];
     for (final option in fareItinerary.airItinerary.originDestinationOptions) {
       for (final item in option.originDestinationOption) {
@@ -310,7 +426,7 @@ class FlightDetailsScreen extends ConsumerWidget {
     return segments;
   }
 
-  int _getNumberOfStops() {
+  int _getNumberOfStops(FareItinerary fareItinerary) {
     if (fareItinerary.airItinerary.originDestinationOptions.isEmpty) return 0;
     return fareItinerary.airItinerary.originDestinationOptions.first.totalStops;
   }

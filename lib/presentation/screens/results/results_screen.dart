@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/app_transitions.dart';
 import '../../providers/flight_providers.dart';
 import '../../widgets/flights/filters/filter_models.dart';
 import '../../widgets/flights/filters/filter_panel.dart';
@@ -197,32 +198,11 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                   filters: _filters,
                   onFlightTap: (fareItinerary) {
                     Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            FlightDetailsScreen(fareItinerary: fareItinerary),
-                        transitionDuration: const Duration(milliseconds: 400),
-                        reverseTransitionDuration:
-                            const Duration(milliseconds: 300),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          const begin = Offset(1.0, 0.0);
-                          const end = Offset.zero;
-                          const curve = Curves.easeOutCubic;
-
-                          final tween = Tween(begin: begin, end: end);
-                          final curvedAnimation = CurvedAnimation(
-                            parent: animation,
-                            curve: curve,
-                          );
-
-                          return SlideTransition(
-                            position: tween.animate(curvedAnimation),
-                            child: FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            ),
-                          );
-                        },
+                      AppTransitions.slideFromRight(
+                        FlightDetailsScreen(
+                          fareItinerary: fareItinerary,
+                          searchParams: widget.searchParams,
+                        ),
                       ),
                     );
                   },

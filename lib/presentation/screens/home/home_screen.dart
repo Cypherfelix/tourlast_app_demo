@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/sample_trip.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/utils/app_transitions.dart';
 import '../../widgets/home/background/sky_backdrop.dart';
 import '../../widgets/home/header/hero_text.dart';
 import '../../widgets/home/header/top_bar.dart';
@@ -276,27 +277,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Navigate with custom transition
     Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            ResultsScreen(searchParams: searchParams),
-        transitionDuration: const Duration(milliseconds: 600),
-        reverseTransitionDuration: const Duration(milliseconds: 400),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 0.3);
-          const end = Offset.zero;
-          const curve = Curves.easeOutCubic;
-
-          final tween = Tween(begin: begin, end: end);
-          final curvedAnimation = CurvedAnimation(
-            parent: animation,
-            curve: curve,
-          );
-
-          return SlideTransition(
-            position: tween.animate(curvedAnimation),
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
+      AppTransitions.slideFromTop(
+        ResultsScreen(searchParams: searchParams),
       ),
     );
   }
